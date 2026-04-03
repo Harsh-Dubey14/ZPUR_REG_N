@@ -1,0 +1,35 @@
+{
+  "formatVersion": "2",
+  "header": {
+    "description": "An SAP Fiori application.",
+    "originalLanguage": "en",
+    "abapLanguageVersion": "cloudDevelopment"
+  },
+  "generalInformation": {
+    "appType": "ui5",
+    "catalogId": "SAP_TC_UI5_REPO_UIAD",
+    "targetMappingTitle": "FI Purchase Register"
+  },
+  "ui5AppDetails": {
+    "appId": "zpurnv2"
+  },
+  "navigation": {
+    "targetMappingId": "UI5R_F93C8964CC811A7810667AC9C602DA84E7963768_TM",
+    "semanticObject": "zpur_nv2",
+    "action": "Display",
+    "desktop": true,
+    "tablet": true,
+    "phone": true
+  },
+  "tiles": [
+    {
+      "id": "UI5R_F93C8964CC811A7810667AC9C602DA84E7963768_AL",
+      "tileType": "static",
+      "isDefault": true,
+      "standard": {
+        "title": "FI Purchase Register",
+        "icon": "sap-icon://receipt"
+      }
+    }
+  ]
+}
