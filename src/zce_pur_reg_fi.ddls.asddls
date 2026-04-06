@@ -158,6 +158,9 @@ define custom entity ZCE_PUR_REG_FI
       }]
       CostCenter                   : kostl;
 
+      /* ======================= pURCHASING ======================= */
+
+
       /* ======================= MATERIAL ======================= */
 
       @UI.lineItem                 : [{ position: 200 }]
@@ -172,6 +175,17 @@ define custom entity ZCE_PUR_REG_FI
       @EndUserText.label           : 'Product Name'
       ProductName                  : maktx;
 
+      @UI.lineItem                 : [{ position: 211 }]
+      @EndUserText.label           : 'Tax Item Grp'
+      @UI.hidden                   : true
+      TaxItemGroup                 : abap.char(3);
+
+
+      @UI.lineItem                 : [{ position: 211 }]
+      @EndUserText.label           : 'Tax Base'
+      @UI.hidden                   : true
+      @Semantics.amount.currencyCode:'TransactionCurrency'
+      TaxBaseAmountInCoCodeCrcy    : dmbtr;
       /* ======================= QUANTITY ======================= */
 
       @UI.lineItem                 : [{ position: 220 }]
@@ -297,5 +311,21 @@ define custom entity ZCE_PUR_REG_FI
       @EndUserText.label           : 'Invoice Amount'
       @Semantics.amount.currencyCode:'CompanyCodeCurrency'
       InvoiceAmount                : abap.curr(15,2);
+
+      //      @UI: { lineItem : [ { position: 460 } ],
+      //             identification: [ { position: 460 } ] }
+      //      @EndUserText.label: 'Is Reversed'
+      //      IsReversed
+      //
+      //      @UI: { lineItem : [ { position: 210 } ],
+      //             identification: [ { position: 210 } ] }
+      //      @EndUserText.label: 'Supplier Region'
+      //      SupplierRegion                 as SupplierRegion,
+      //
+      //      @UI: { lineItem : [ { position: 250 } ],
+      //             identification: [ { position: 250 } ] }
+      //      @EndUserText.label: 'GL Account in PO'
+      //      @Consumption.valueHelpDefinition: [{ entity.name: 'I_GLAccountStdVH', entity.element: 'GLAccount' }]
+      //      POGLAccount
 
 }

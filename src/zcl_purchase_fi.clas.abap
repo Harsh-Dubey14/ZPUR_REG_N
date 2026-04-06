@@ -69,6 +69,7 @@ CLASS zcl_purchase_fi IMPLEMENTATION.
       "" For Missing Amounts.
       SELECT * FROM zi_journalentrykdtax
       FOR ALL ENTRIES IN @lt_response WHERE accountingdocument = @lt_response-accountingdocument
+      AND fiscalyear = @lt_response-fiscalyear AND companycode = @lt_response-companycode
       INTO TABLE @DATA(lt_zi_journalentrykdtax).
 
       "" For STO.
@@ -99,6 +100,30 @@ CLASS zcl_purchase_fi IMPLEMENTATION.
           AND h~transactioncode    = 'J_1IG_INV'
         INTO TABLE @DATA(it_journal).
 
+      IF it_journal IS NOT INITIAL.
+        SELECT companycode,
+               accountingdocument,
+               fiscalyear,
+               accountingdocumentitem,
+               chartofaccounts,
+               accountingdocumentitemtype,
+               financialaccounttype,
+               withholdingtaxcode,
+               taxitemgroup,
+               transactiontypedetermination,
+               accountingdocumenttype,
+               amountincompanycodecurrency,
+               glaccount,
+               taxbaseamountincocodecrcy
+          FROM i_operationalacctgdocitem
+          FOR ALL ENTRIES IN @it_journal
+          WHERE companycode        = @it_journal-companycode
+            AND fiscalyear         = @it_journal-fiscalyear
+            AND accountingdocument = @it_journal-accountingdocument
+            AND accountingdocumentitemtype = 'T'
+          INTO TABLE @DATA(it_operational_items_sto).
+      ENDIF.
+
     ENDIF.
 
     LOOP AT lt_response ASSIGNING FIELD-SYMBOL(<fs_response>).
@@ -115,44 +140,179 @@ CLASS zcl_purchase_fi IMPLEMENTATION.
           <fs_response>-igstamount.
       ENDIF.
 
-      IF <fs_response>-transactiontypedetermination = 'BSX'.
+      IF <fs_response>-transactiontypedetermination = 'BSX' OR <fs_response>-transactiontypedetermination = 'KBS' OR
+      <fs_response>-transactiontypedetermination = 'FRL' OR <fs_response>-transactiontypedetermination = 'ANL'.
 
         IF line_exists( lt_response[ accountingdocument = <fs_response>-accountingdocument
          fiscalyear = <fs_response>-fiscalyear
          transactiontypedetermination = 'WRX' ] ).
 
-          CLEAR:
-            <fs_response>-cgstrate,
-            <fs_response>-cgstamount,
-            <fs_response>-sgstrate,
-            <fs_response>-sgstamount,
-            <fs_response>-ugstrate,
-            <fs_response>-ugstamount,
-            <fs_response>-igstrate,
-            <fs_response>-igstamount.
+          READ TABLE lt_response ASSIGNING FIELD-SYMBOL(<fs_check>) WITH KEY  accountingdocument = <fs_response>-accountingdocument
+                                                                              fiscalyear         = <fs_response>-fiscalyear
+                                                                              transactiontypedetermination = 'WRX'.
 
-        ENDIF.
-      ENDIF.
+          IF sy-subrc IS INITIAL AND <fs_check>-taxitemgroup = <fs_response>-taxitemgroup.
 
-
-      "" To fill missing STO GST Amounts.
-      IF line_exists( it_journal[ accountingdocument = <fs_response>-accountingdocument ] ).
-        " line found
-        IF <fs_response>-accountingdocumentitem = '002'.
-          READ TABLE it_journal ASSIGNING FIELD-SYMBOL(<fs_journal>) WITH KEY accountingdocument = <fs_response>-accountingdocument
-          glaccount = '0000148000'. "IGST GL.
-          IF sy-subrc IS INITIAL.
-            <fs_response>-igstrate = 18.
-            <fs_response>-igstglaccount = '0000148000'.
-            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
-
-            <fs_response>-taxamount =  <fs_response>-igstamount.
-            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+            CLEAR:
+              <fs_response>-cgstrate,
+              <fs_response>-cgstamount,
+              <fs_response>-sgstrate,
+              <fs_response>-sgstamount,
+              <fs_response>-ugstrate,
+              <fs_response>-ugstamount,
+              <fs_response>-igstrate,
+              <fs_response>-igstamount.
 
           ENDIF.
-        ENDIF.
 
+
+
+        ENDIF.
       ENDIF.
+
+      "STO NEW LOGIC.
+      ASSIGN it_operational_items_sto[ accountingdocument = <fs_response>-accountingdocument
+                                       taxbaseamountincocodecrcy       = <fs_response>-amountincompanycodecurrency ] TO FIELD-SYMBOL(<fs_journal>).
+      IF sy-subrc = 0.
+        IF <fs_response>-invoiceamount IS NOT INITIAL.
+          <fs_response>-igstrate = ( <fs_journal>-amountincompanycodecurrency / <fs_response>-invoiceamount ) * 100.
+        ELSE.
+          <fs_response>-igstrate = 0.
+        ENDIF.
+        <fs_response>-igstglaccount = <fs_journal>-glaccount.
+        <fs_response>-igstamount    = <fs_journal>-amountincompanycodecurrency.
+        <fs_response>-taxamount     = <fs_response>-igstamount.
+        <fs_response>-invoiceamount += <fs_response>-igstamount.
+      ENDIF.
+
+***      "" To fill missing STO GST Amounts.
+***      IF line_exists( it_journal[ accountingdocument = <fs_response>-accountingdocument ] ).
+***        " line found
+***        IF <fs_response>-accountingdocumentitem = '002'.
+****          READ TABLE it_journal ASSIGNING FIELD-SYMBOL(<fs_journal>) WITH KEY accountingdocument = <fs_response>-accountingdocument
+****          glaccount = '0000148000'. "IGST GL.
+****          IF sy-subrc IS INITIAL.
+****            <fs_response>-igstrate = 18.
+****            <fs_response>-igstglaccount = '0000148000'.
+****            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+****
+****            <fs_response>-taxamount =  <fs_response>-igstamount.
+****            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+****
+****          ENDIF.
+***
+***          "000026600005
+***          READ TABLE it_journal ASSIGNING FIELD-SYMBOL(<fs_journal>)
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600005'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600005'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600008
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600008'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600008'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600011
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600011'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600011'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600014
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600014'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600014'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600017
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600017'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600017'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600020
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600020'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600020'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600058
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600058'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600058'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600002
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600002'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600002'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***          "000026600023
+***          READ TABLE it_journal ASSIGNING <fs_journal>
+***            WITH KEY accountingdocument = <fs_response>-accountingdocument
+***                     glaccount = '0026600023'.
+***          IF sy-subrc IS INITIAL.
+***            <fs_response>-igstrate = 18.
+***            <fs_response>-igstglaccount = '0026600023'.
+***            <fs_response>-igstamount = <fs_journal>-amountincompanycodecurrency.
+***            <fs_response>-taxamount = <fs_response>-igstamount.
+***            <fs_response>-invoiceamount = <fs_response>-invoiceamount + <fs_response>-igstamount.
+***          ENDIF.
+***
+***
+***        ENDIF.
+***
+***      ENDIF.
 
       "" To fill missing GST Amounts.
       IF ( <fs_response>-cgstrate IS NOT INITIAL AND <fs_response>-cgstamount IS INITIAL ) OR

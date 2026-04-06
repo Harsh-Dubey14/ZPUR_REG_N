@@ -1,0 +1,35 @@
+{
+  "formatVersion": "2",
+  "header": {
+    "description": "An SAP Fiori application.",
+    "originalLanguage": "en",
+    "abapLanguageVersion": "cloudDevelopment"
+  },
+  "generalInformation": {
+    "appType": "ui5",
+    "catalogId": "SAP_TC_UI5_REPO_UIAD",
+    "targetMappingTitle": "Purchase Register FI"
+  },
+  "ui5AppDetails": {
+    "appId": "zsbpurfi"
+  },
+  "navigation": {
+    "targetMappingId": "UI5R_807959F1D21465BB8B48A91B199ECA0B44DBACC6_TM",
+    "semanticObject": "ZCE_PUR_REG_FI",
+    "action": "display",
+    "desktop": true,
+    "tablet": true,
+    "phone": true
+  },
+  "tiles": [
+    {
+      "id": "UI5R_807959F1D21465BB8B48A91B199ECA0B44DBACC6_AL",
+      "tileType": "static",
+      "isDefault": true,
+      "standard": {
+        "title": "Purchase Register FI",
+        "icon": "sap-icon://expense-report"
+      }
+    }
+  ]
+}

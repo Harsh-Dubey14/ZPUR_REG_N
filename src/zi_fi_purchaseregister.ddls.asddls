@@ -21,6 +21,8 @@ define root view entity ZI_FI_PurchaseRegister
   key _JournalEntryItem.AccountingDocument                                      as AccountingDocument,
   key _JournalEntryItem.AccountingDocumentItem                                  as AccountingDocumentItem,
 
+      _JournalEntryItem.TaxItemGroup                                            as TaxItemGroup,
+
       _JournalEntryItem._JournalEntry.DocumentReferenceID                       as DocumentReferenceID,
       _JournalEntryItem._JournalEntry.AccountingDocumentType                    as AccountingDocumentType,
       _JournalEntryItem._JournalEntry.AccountingDocumentTypeName                as AccountingDocumentTypeName,

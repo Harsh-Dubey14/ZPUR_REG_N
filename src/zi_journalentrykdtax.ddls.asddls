@@ -78,31 +78,85 @@ define view entity ZI_JournalEntryKDTax
       _AcctgDocTax.TaxAbsltBaseAmountInCoCodeCrcy                                                        as TaxAbsltBaseAmountInCoCodeCrcy
 }
 where
-          _AcctgDocItem.AccountingDocumentItemType           <> 'T'
+           _AcctgDocItem.AccountingDocumentItemType           <> 'T'
   and(
-          _AcctgDocItem.FinancialAccountType                 =  'S'
-    or    _AcctgDocItem.FinancialAccountType                 =  'A'
+           _AcctgDocItem.FinancialAccountType                 =  'S'
+    or     _AcctgDocItem.FinancialAccountType                 =  'A'
 
     or(
-          _AcctgDocItem.FinancialAccountType                 =  'M'
-      and _AcctgDocItem._JournalEntry.AccountingDocumentType =  'RE'
+           _AcctgDocItem.FinancialAccountType                 =  'M'
+      and(
+           _AcctgDocItem._JournalEntry.AccountingDocumentType =  'RE'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3A'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3B'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3C'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3D'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3E'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3F'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3G'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3H'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3I'
+        or _AcctgDocItem._JournalEntry.AccountingDocumentType =  '1G'
+      )
     )
 
   )
-  and     _AcctgDocItem.WithholdingTaxCode                   =  ''
+  and      _AcctgDocItem.WithholdingTaxCode                   =  ''
   // and _AcctgDocItem.ProfitLossAccountType = 'X'
   and(
-          // For Customer
-          _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DR'
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DG'
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DN'
+           // For Customer
+           _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DR'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DG'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DN'
     // or _AcctgDocItem._JournalEntry.AccountingDocumentType = 'RV'
 
     // For Supplier
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'RE'
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'RT'
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'KR'
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'KG'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'RE'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'RT'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'KR'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'KG'
 
-    or    _AcctgDocItem._JournalEntry.AccountingDocumentType =  'JV'
+    // Dayal Specific Custom Documents.
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2A'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2B'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2C'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2D'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2E'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2F'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2G'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2H'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '2I'
+
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3A'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3B'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3C'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3D'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3E'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3F'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3G'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3H'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '3I'
+
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4A'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4B'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4C'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4D'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4E'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4F'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4G'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4H'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '4I'
+
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'Y1'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'ZA'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'ZC'
+
+
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'KC'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'DC'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'KZ'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '1A'
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  '1F'
+
+    or     _AcctgDocItem._JournalEntry.AccountingDocumentType =  'JV'
   )
